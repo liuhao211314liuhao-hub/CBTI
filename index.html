@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🐱 猫咪性格测试 CBTI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--coral:#FF6B6B;--coral-dark:#E85555;--peach:#FF8E53;--cream:#FFF5F0;--white:#FFFFFF;--dark:#2D3436;--gray:#636E72;--light-gray:#B2BEC3;--purple:#A29BFE;--mint:#55EFC4;--pink:#FD79A8;--yellow:#FFEAA7;--blue:#74B9FF;--shadow:0 4px 20px rgba(0,0,0,0.08)}
+html,body{width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;background:var(--cream);color:var(--dark)}
+.app{width:100%;height:100%;max-width:430px;margin:0 auto;position:relative;overflow:hidden}
+.page{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .5s ease;padding:24px}
+.page.active{transform:translateX(0);opacity:1}
+.page.left{transform:translateX(-100%);opacity:0}
+.page.right{transform:translateX(100%);opacity:0}
+.page.hidden{display:none}
+
+/* Welcome Page */
+.welcome-bg{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);z-index:-1}
+.welcome-emoji{font-size:80px;animation:float 3s ease-in-out infinite;margin-bottom:24px;filter:drop-shadow(0 10px 20px rgba(0,0,0,0.2))}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-15px) rotate(5deg)}}
+.welcome-title{font-size:32px;font-weight:800;color:#fff;text-align:center;line-height:1.3;margin-bottom:8px;text-shadow:0 2px 10px rgba(0,0,0,0.15)}
+.welcome-subtitle{font-size:16px;color:rgba(255,255,255,0.85);text-align:center;margin-bottom:40px;font-weight:300;letter-spacing:1px}
+.welcome-desc{font-size:14px;color:rgba(255,255,255,0.7);text-align:center;margin-bottom:32px;line-height:1.8;max-width:300px}
+.welcome-features{display:flex;gap:20px;margin-bottom:40px}
+.welcome-feature{text-align:center;color:rgba(255,255,255,0.9);font-size:12px}
+.welcome-feature-icon{font-size:28px;margin-bottom:6px}
+
+/* Cat Name Input */
+.name-section{background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border-radius:20px;padding:24px;width:100%;max-width:320px;margin-bottom:32px}
+.name-label{color:rgba(255,255,255,0.9);font-size:14px;margin-bottom:12px;text-align:center}
+.name-input{width:100%;padding:14px 20px;border:2px solid rgba(255,255,255,0.3);border-radius:14px;background:rgba(255,255,255,0.9);font-size:18px;color:var(--dark);outline:none;text-align:center;transition:border-color .3s}
+.name-input:focus{border-color:rgba(255,255,255,0.8)}
+.name-input::placeholder{color:var(--light-gray)}
+
+/* Buttons */
+.btn-primary{background:linear-gradient(135deg,var(--coral),var(--peach));color:#fff;border:none;padding:16px 48px;border-radius:50px;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(255,107,107,0.4);transition:transform .2s,box-shadow .2s;letter-spacing:1px}
+.btn-primary:active{transform:scale(0.96);box-shadow:0 2px 10px rgba(255,107,107,0.3)}
+.btn-secondary{background:rgba(255,255,255,0.2);color:#fff;border:2px solid rgba(255,255,255,0.4);padding:12px 32px;border-radius:50px;font-size:14px;cursor:pointer;transition:all .2s;margin-top:12px;backdrop-filter:blur(5px)}
+.btn-secondary:active{background:rgba(255,255,255,0.3);transform:scale(0.96)}
+
+/* Question Page */
+.question-page{background:var(--white);justify-content:flex-start;padding:0}
+.question-header{width:100%;padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between}
+.progress-bar-container{flex:1;height:6px;background:#F0F0F0;border-radius:3px;margin:0 16px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--coral),var(--peach));border-radius:3px;transition:width .4s ease}
+.question-counter{font-size:13px;color:var(--gray);font-weight:600;white-space:nowrap}
+.question-dimension{font-size:12px;color:var(--purple);font-weight:600;padding:2px 10px;background:rgba(162,155,254,0.1);border-radius:20px}
+.question-body{flex:1;width:100%;display:flex;flex-direction:column;justify-content:center;padding:32px 24px}
+.question-icon{font-size:48px;margin-bottom:20px;animation:questionIn .5s ease .1s both}
+@keyframes questionIn{from{opacity:0;transform:translateY(20px) scale(0.8)}to{opacity:1;transform:translateY(0) scale(1)}}
+.question-text{font-size:20px;font-weight:700;line-height:1.6;margin-bottom:32px;color:var(--dark)}
+.options{display:flex;flex-direction:column;gap:12px;width:100%}
+.option-btn{width:100%;padding:16px 20px;border:2px solid #F0F0F0;border-radius:16px;background:#FAFAFA;font-size:15px;color:var(--dark);cursor:pointer;text-align:left;transition:all .3s;line-height:1.5;animation:optionIn .4s ease both;display:flex;align-items:center;gap:12px}
+.option-btn:nth-child(1){animation-delay:.05s}
+.option-btn:nth-child(2){animation-delay:.1s}
+.option-btn:nth-child(3){animation-delay:.15s}
+@keyframes optionIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+.option-btn:active{transform:scale(0.98)}
+.option-btn.selected{border-color:var(--coral);background:linear-gradient(135deg,rgba(255,107,107,0.08),rgba(255,142,83,0.08))}
+.option-emoji{font-size:24px;flex-shrink:0}
+.option-label{font-size:15px;line-height:1.5}
+.skip-btn{color:var(--light-gray);font-size:13px;margin-top:20px;cursor:pointer;padding:8px;transition:color .2s}
+.skip-btn:active{color:var(--gray)}
+
+/* Loading Page */
+.loading-bg{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);z-index:-1}
+.loading-emoji{font-size:72px;animation:loadBounce 1s ease-in-out infinite;margin-bottom:24px}
+@keyframes loadBounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-20px) scale(1.1)}}
+.loading-text{color:#fff;font-size:18px;font-weight:600;margin-bottom:12px}
+.loading-sub{color:rgba(255,255,255,0.7);font-size:14px}
+.loading-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+
+/* Result Page */
+.result-page{background:var(--cream);justify-content:flex-start;overflow-y:auto;padding-bottom:40px}
+.result-hero{width:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:48px 24px 40px;text-align:center;border-radius:0 0 40px 40px;position:relative;overflow:hidden}
+.result-hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,255,255,0.08) 1px,transparent 1px);background-size:30px 30px}
+.result-cat-name{font-size:18px;color:rgba(255,255,255,0.85);margin-bottom:8px;font-weight:400}
+.result-type-emoji{width:140px;height:140px;margin:16px auto;display:flex;align-items:center;justify-content:center}
+@keyframes catFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.result-type-emoji svg{animation:catFloat 3s ease-in-out infinite;width:100%;height:100%;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.2))}
+.result-type-name{font-size:28px;font-weight:800;color:#fff;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.result-type-code{display:inline-block;padding:6px 20px;background:rgba(255,255,255,0.2);backdrop-filter:blur(5px);border-radius:20px;color:#fff;font-size:16px;font-weight:700;letter-spacing:4px;margin-bottom:4px}
+.result-body{padding:24px;width:100%;max-width:400px}
+.result-section{background:var(--white);border-radius:20px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.result-section-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.result-desc{font-size:15px;line-height:1.8;color:var(--gray)}
+.result-traits{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.trait-item{padding:12px;border-radius:12px;background:var(--cream);text-align:center}
+.trait-icon{font-size:20px;margin-bottom:4px}
+.trait-name{font-size:12px;color:var(--gray);font-weight:600}
+.trait-value{font-size:11px;color:var(--light-gray);margin-top:2px}
+.dimension-bars{display:flex;flex-direction:column;gap:16px}
+.dimension-row{display:flex;flex-direction:column;gap:6px}
+.dimension-labels{display:flex;justify-content:space-between;font-size:13px;font-weight:600}
+.dimension-label-left{color:var(--purple)}
+.dimension-label-right{color:var(--coral)}
+.dimension-bar-bg{height:8px;background:#F0F0F0;border-radius:4px;position:relative;overflow:hidden}
+.dimension-bar-fill{height:100%;border-radius:4px;transition:width 1s ease .5s;width:0}
+.dimension-bar-fill.left{background:linear-gradient(90deg,var(--purple),#B8B0FE);float:right}
+.dimension-bar-fill.right{background:linear-gradient(90deg,var(--peach),var(--coral));float:left}
+.result-tip{font-size:14px;line-height:1.8;color:var(--gray);font-style:italic;border-left:3px solid var(--purple);padding-left:12px}
+.share-section{width:100%;max-width:400px;padding:0 24px;margin-top:8px}
+.btn-share{width:100%;padding:18px;border:none;border-radius:16px;font-size:17px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .2s}
+.btn-share:active{transform:scale(0.97)}
+.btn-share-img{background:linear-gradient(135deg,var(--coral),var(--peach));color:#fff;box-shadow:0 4px 15px rgba(255,107,107,0.4);margin-bottom:12px}
+.btn-share-retry{background:var(--white);color:var(--gray);box-shadow:var(--shadow)}
+
+/* Canvas for share image */
+#shareCanvas{display:none}
+
+/* Toast */
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:rgba(0,0,0,0.75);color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;z-index:1000;opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:0;display:none}
+
+/* Confetti */
+.confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;overflow:hidden}
+.confetti{position:absolute;width:10px;height:10px;top:-10px;animation:confettiFall linear forwards}
+@keyframes confettiFall{to{top:110vh;transform:rotate(720deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Welcome -->
+  <div id="page-welcome" class="page active">
+    <div class="welcome-bg"></div>
+    <div class="welcome-emoji">🐱</div>
+    <h1 class="welcome-title">你家猫咪是什么性格？</h1>
+    <p class="welcome-subtitle">CBTI · 猫咪行为类型测试</p>
+    <div class="welcome-features">
+      <div class="welcome-feature"><div class="welcome-feature-icon">🧪</div>12道精选题</div>
+      <div class="welcome-feature"><div class="welcome-feature-icon">🎭</div>16种性格</div>
+      <div class="welcome-feature"><div class="welcome-feature-icon">📸</div>分享海报</div>
+    </div>
+    <div class="name-section">
+      <div class="name-label">先告诉我，你家猫咪叫什么名字？</div>
+      <input class="name-input" id="catName" type="text" placeholder="输入猫咪昵称..." maxlength="10">
+    </div>
+    <button class="btn-primary" onclick="startQuiz()">开始测试 🐾</button>
+  </div>
+
+  <!-- Question -->
+  <div id="page-question" class="page right">
+    <div class="question-page">
+      <div class="question-header">
+        <span class="question-counter" id="qCounter">1/12</span>
+        <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+        <span class="question-dimension" id="qDimension"></span>
+      </div>
+      <div class="question-body">
+        <div class="question-icon" id="qIcon"></div>
+        <div class="question-text" id="qText"></div>
+        <div class="options" id="optionsContainer"></div>
+        <div class="skip-btn" onclick="skipQuestion()">跳过此题 →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="page-loading" class="page right">
+    <div class="loading-bg"></div>
+    <div class="loading-emoji">🔮</div>
+    <div class="loading-text">正在分析 <span id="loadingCatName">猫咪</span> 的性格<span class="loading-dots"></span></div>
+    <div class="loading-sub">CBTI 性格引擎计算中</div>
+  </div>
+
+  <!-- Result -->
+  <div id="page-result" class="page right">
+    <div class="result-page">
+      <div class="result-hero">
+        <div class="result-cat-name" id="resultCatName">我家猫咪</div>
+        <div class="result-type-emoji" id="resultEmoji"></div>
+        <div class="result-type-name" id="resultTypeName"></div>
+        <div class="result-type-code" id="resultCode"></div>
+      </div>
+      <div class="result-body">
+        <div class="result-section">
+          <div class="result-section-title">📝 性格描述</div>
+          <div class="result-desc" id="resultDesc"></div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-title">📊 性格维度</div>
+          <div class="dimension-bars" id="dimensionBars"></div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-title">✨ 性格关键词</div>
+          <div class="result-traits" id="resultTraits"></div>
+        </div>
+        <div class="result-section">
+          <div class="result-section-title">💡 铲屎官小贴士</div>
+          <div class="result-tip" id="resultTip"></div>
+        </div>
+      </div>
+      <div class="share-section">
+        <button class="btn-share btn-share-img" onclick="generateShareImage()">📸 生成分享海报</button>
+        <button class="btn-share btn-share-retry" onclick="restartQuiz()">🔄 再测一次</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<canvas id="shareCanvas"></canvas>
+<div class="confetti-container" id="confettiContainer"></div>
+
+<script>
+// ===== DATA =====
+const DIMENSIONS = [
+  { key: 'EI', name: '能量来源', left: 'E 外向型', right: 'I 内向型', icon: '⚡' },
+  { key: 'SN', name: '认知方式', left: 'S 感觉型', right: 'N 直觉型', icon: '🧠' },
+  { key: 'TF', name: '决策方式', left: 'T 理性型', right: 'F 感性型', icon: '💝' },
+  { key: 'JP', name: '生活方式', left: 'J 规律型', right: 'P 随性型', icon: '🎯' }
+];
+
+const QUESTIONS = [
+  // E/I
+  { dim: 'EI', icon: '🏠', text: '当有客人来家里时，你的猫咪通常会？', options: [
+    { emoji: '🙋', text: '主动上前打招呼，甚至跳到客人腿上', scores: { E: 2 } },
+    { emoji: '🙈', text: '立刻躲起来，等客人走了才出来', scores: { I: 2 } },
+    { emoji: '👀', text: '远远地观察，保持安全距离', scores: { I: 1 } }
+  ]},
+  { dim: 'EI', icon: '🐾', text: '和家里的其他宠物（或毛绒玩具）相处时，它会？', options: [
+    { emoji: '🎉', text: '追着玩，打闹嬉戏，精力充沛', scores: { E: 2 } },
+    { emoji: '😴', text: '互不干扰，各玩各的', scores: { I: 2 } },
+    { emoji: '🤝', text: '偶尔互动一下，然后各自散开', scores: { I: 1 } }
+  ]},
+  { dim: 'EI', icon: '🛋️', text: '当你在沙发上看电视时，猫咪会？', options: [
+    { emoji: '🥰', text: '直接跳上来趴你旁边或身上', scores: { E: 2 } },
+    { emoji: '🏃', text: '去自己的专属角落待着', scores: { I: 2 } },
+    { emoji: '🤔', text: '有时过来蹭蹭，有时自己玩', scores: { E: 1 } }
+  ]},
+  // S/N
+  { dim: 'SN', icon: '📦', text: '面对一个新纸箱，你的猫咪会？', options: [
+    { emoji: '😴', text: '立刻钻进去躺下，纸箱就是新床了', scores: { S: 2 } },
+    { emoji: '🏰', text: '把它当堡垒，蹲在里面暗中观察', scores: { N: 2 } },
+    { emoji: '👃', text: '闻一闻就走，兴趣不大', scores: { S: 1 } }
+  ]},
+  { dim: 'SN', icon: '🧸', text: '你的猫咪玩逗猫棒的方式是？', options: [
+    { emoji: '💪', text: '猛扑猛咬，简单粗暴，享受追逐快感', scores: { S: 2 } },
+    { emoji: '🔬', text: '先观察规律，然后出其不意地一击', scores: { N: 2 } },
+    { emoji: '🥱', text: '看心情，高兴就玩两下', scores: { S: 1 } }
+  ]},
+  { dim: 'SN', icon: '🐦', text: '看到窗外的鸟或虫子，猫咪会？', options: [
+    { emoji: '💥', text: '直接扑上去，疯狂拍打玻璃', scores: { S: 2 } },
+    { emoji: '🧐', text: '长时间盯着看，像在研究猎物', scores: { N: 2 } },
+    { emoji: '😐', text: '瞟一眼，然后继续睡觉', scores: { S: 1 } }
+  ]},
+  // T/F
+  { dim: 'TF', icon: '😿', text: '你不小心踩到猫咪尾巴后，它会？', options: [
+    { emoji: '🏃', text: '迅速跑开，一脸"我记住你了"的表情', scores: { T: 2 } },
+    { emoji: '😭', text: '大叫着跑过来找你撒娇求安慰', scores: { F: 2 } },
+    { emoji: '😑', text: '哼一声就走了，小场面', scores: { T: 1 } }
+  ]},
+  { dim: 'TF', icon: '😢', text: '当你情绪低落哭泣时，猫咪会？', options: [
+    { emoji: '🐈', text: '可能没察觉，继续做自己的事', scores: { T: 2 } },
+    { emoji: '❤️', text: '默默走过来，用头蹭你、舔你的手', scores: { F: 2 } },
+    { emoji: '❓', text: '好奇地看看你，不太确定发生了什么', scores: { F: 1 } }
+  ]},
+  { dim: 'TF', icon: '🥛', text: '猫咪打翻水杯被发现后，它会？', options: [
+    { emoji: '🚀', text: '光速撤离现场，假装与自己无关', scores: { T: 2 } },
+    { emoji: '😱', text: '一脸无辜地看着你，疯狂蹭蹭你', scores: { F: 2 } },
+    { emoji: '🧊', text: '坐在原地无动于衷，"是杯子先动的手"', scores: { T: 1 } }
+  ]},
+  // J/P
+  { dim: 'JP', icon: '🍽️', text: '你家猫咪的吃饭习惯是？', options: [
+    { emoji: '⏰', text: '到点准时催饭，碗里没粮就冲你喵', scores: { J: 2 } },
+    { emoji: '🦥', text: '碗里有粮才吃，不急不慌', scores: { P: 2 } },
+    { emoji: '📋', text: '大致固定时间，但偶尔随机加餐', scores: { J: 1 } }
+  ]},
+  { dim: 'JP', icon: '🌙', text: '你家猫咪的作息规律是？', options: [
+    { emoji: '📅', text: '非常规律，每天固定时间固定地点睡觉', scores: { J: 2 } },
+    { emoji: '🎲', text: '完全随心所欲，随时随地想睡就睡', scores: { P: 2 } },
+    { emoji: '🌙', text: '白天睡，凌晨准时起来开演唱会', scores: { P: 1 } }
+  ]},
+  { dim: 'JP', icon: '🚽', text: '猫咪使用猫砂盆的表现是？', options: [
+    { emoji: '✅', text: '非常规矩，从不在外面乱来', scores: { J: 2 } },
+    { emoji: '😤', text: '不高兴了就故意尿在床上/沙发上', scores: { P: 2 } },
+    { emoji: '🤷', text: '基本规矩，但偶尔"忘记"', scores: { P: 1 } }
+  ]}
+];
+
+// SVG Cat Illustrations for each personality type
+const CAT_SVGS = {
+  'ESTJ': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="35" ry="28" fill="#FF8E53"/><ellipse cx="70" cy="80" rx="30" ry="24" fill="#FF6B6B"/><path d="M45 50L35 25L55 45" fill="#FF6B6B"/><path d="M95 50L105 25L85 45" fill="#FF6B6B"/><circle cx="55" cy="70" r="6" fill="#2D3436"/><circle cx="85" cy="70" r="6" fill="#2D3436"/><path d="M62 78Q70 82 78 78" stroke="#2D3436" stroke-width="2" fill="none"/><path d="M45 85H35M105 85H95" stroke="#FF6B6B" stroke-width="3" stroke-linecap="round"/><rect x="50" y="95" width="40" height="8" rx="4" fill="#E85555"/><circle cx="70" cy="45" r="8" fill="#FFD700"/></svg>`,
+  'ESTP': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="32" ry="26" fill="#74B9FF"/><ellipse cx="70" cy="80" rx="28" ry="22" fill="#55EFC4"/><path d="M40 48L30 20L52 42" fill="#55EFC4"/><path d="M100 48L110 20L88 42" fill="#55EFC4"/><circle cx="52" cy="72" r="7" fill="#2D3436"/><circle cx="88" cy="72" r="7" fill="#2D3436"/><circle cx="52" cy="70" r="2" fill="#FFF"/><circle cx="88" cy="70" r="2" fill="#FFF"/><path d="M60 82Q70 88 80 82" stroke="#2D3436" stroke-width="2" fill="none"/><path d="M35 55L25 50M105 55L115 50" stroke="#74B9FF" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="40" r="6" fill="#FFD93D"/></svg>`,
+  'ESFJ': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="34" ry="27" fill="#FD79A8"/><ellipse cx="70" cy="80" rx="29" ry="23" fill="#FDCB6E"/><path d="M42 52L32 28L52 46" fill="#FDCB6E"/><path d="M98 52L108 28L88 46" fill="#FDCB6E"/><circle cx="54" cy="72" r="6" fill="#2D3436"/><circle cx="86" cy="72" r="6" fill="#2D3436"/><circle cx="54" cy="70" r="2" fill="#FFF"/><circle cx="86" cy="70" r="2" fill="#FFF"/><ellipse cx="70" cy="82" rx="8" ry="5" fill="#FF6B6B"/><path d="M38 88Q30 85 32 78M102 88Q110 85 108 78" stroke="#FD79A8" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="42" r="7" fill="#E17055" opacity="0.5"/></svg>`,
+  'ESFP': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="33" ry="27" fill="#A29BFE"/><ellipse cx="70" cy="80" rx="28" ry="23" fill="#FD79A8"/><path d="M40 50L28 22L52 44" fill="#FD79A8"/><path d="M100 50L112 22L88 44" fill="#FD79A8"/><circle cx="52" cy="72" r="7" fill="#2D3436"/><circle cx="88" cy="72" r="7" fill="#2D3436"/><circle cx="52" cy="70" r="3" fill="#FFF"/><circle cx="88" cy="70" r="3" fill="#FFF"/><path d="M58 82Q70 92 82 82" stroke="#2D3436" stroke-width="2" fill="none"/><path d="M35 60L25 55M105 60L115 55" stroke="#A29BFE" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="40" r="8" fill="#FFEAA7"/><circle cx="55" cy="95" r="5" fill="#FD79A8" opacity="0.6"/><circle cx="85" cy="95" r="5" fill="#FD79A8" opacity="0.6"/></svg>`,
+  'ENTJ': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="36" ry="29" fill="#2D3436"/><ellipse cx="70" cy="80" rx="31" ry="24" fill="#636E72"/><path d="M38 48L25 18L50 44" fill="#636E72"/><path d="M102 48L115 18L90 44" fill="#636E72"/><circle cx="52" cy="70" r="7" fill="#FFD700"/><circle cx="88" cy="70" r="7" fill="#FFD700"/><circle cx="52" cy="70" r="3" fill="#2D3436"/><circle cx="88" cy="70" r="3" fill="#2D3436"/><path d="M60 82L70 78L80 82" stroke="#FFD700" stroke-width="2" fill="none"/><rect x="55" y="95" width="30" height="6" rx="3" fill="#FFD700"/><circle cx="70" cy="38" r="10" fill="#FFD700" opacity="0.8"/></svg>`,
+  'ENTP': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="32" ry="26" fill="#00B894"/><ellipse cx="70" cy="80" rx="27" ry="22" fill="#55EFC4"/><path d="M40 50L28 20L52 46" fill="#55EFC4"/><path d="M100 50L112 20L88 46" fill="#55EFC4"/><circle cx="52" cy="72" r="7" fill="#2D3436"/><circle cx="88" cy="72" r="7" fill="#2D3436"/><circle cx="52" cy="70" r="2" fill="#FFF"/><circle cx="88" cy="70" r="2" fill="#FFF"/><path d="M62 82Q70 88 78 82" stroke="#2D3436" stroke-width="2" fill="none"/><path d="M35 58L22 52M105 58L118 52" stroke="#00B894" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="40" r="8" fill="#00CEC9"/><path d="M45 100L55 95L65 100L75 95L85 100L95 95" stroke="#00B894" stroke-width="2" stroke-linecap="round"/></svg>`,
+  'ENFJ': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="34" ry="28" fill="#E17055"/><ellipse cx="70" cy="80" rx="29" ry="23" fill="#FAB1A0"/><path d="M42 52L30 24L52 48" fill="#FAB1A0"/><path d="M98 52L110 24L88 48" fill="#FAB1A0"/><circle cx="54" cy="72" r="6" fill="#2D3436"/><circle cx="86" cy="72" r="6" fill="#2D3436"/><circle cx="54" cy="70" r="2" fill="#FFF"/><circle cx="86" cy="70" r="2" fill="#FFF"/><ellipse cx="70" cy="82" rx="10" ry="6" fill="#E17055"/><path d="M38 88L32 82M102 88L108 82" stroke="#E17055" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="42" r="8" fill="#FF7675" opacity="0.6"/><circle cx="45" cy="95" r="4" fill="#FF7675" opacity="0.4"/><circle cx="95" cy="95" r="4" fill="#FF7675" opacity="0.4"/></svg>`,
+  'ENFP': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="33" ry="27" fill="#FDCB6E"/><ellipse cx="70" cy="80" rx="28" ry="22" fill="#FFEAA7"/><path d="M40 50L28 22L52 46" fill="#FFEAA7"/><path d="M100 50L112 22L88 46" fill="#FFEAA7"/><circle cx="52" cy="72" r="7" fill="#2D3436"/><circle cx="88" cy="72" r="7" fill="#2D3436"/><circle cx="52" cy="70" r="3" fill="#FFF"/><circle cx="88" cy="70" r="3" fill="#FFF"/><path d="M60 82Q70 90 80 82" stroke="#2D3436" stroke-width="2" fill="none"/><path d="M35 60L22 55M105 60L118 55" stroke="#FDCB6E" stroke-width="3" stroke-linecap="round"/><circle cx="70" cy="40" r="9" fill="#E17055" opacity="0.5"/><circle cx="50" cy="98" r="5" fill="#FDCB6E" opacity="0.6"/><circle cx="90" cy="98" r="5" fill="#FDCB6E" opacity="0.6"/></svg>`,
+  'ISTJ': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="34" ry="27" fill="#74B9FF"/><ellipse cx="70" cy="80" rx="29" ry="23" fill="#A29BFE"/><path d="M42 52L32 28L52 46" fill="#A29BFE"/><path d="M98 52L108 28L88 46" fill="#A29BFE"/><circle cx="54" cy="72" r="6" fill="#2D3436"/><circle cx="86" cy="72" r="6" fill="#2D3436"/><path d="M62 80Q70 84 78 80" stroke="#2D3436" stroke-width="2" fill="none"/><rect x="55" y="95" width="30" height="6" rx="3" fill="#636E72"/><circle cx="70" cy="42" r="7" fill="#74B9FF" opacity="0.6"/></svg>`,
+  'ISTP': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="32" ry="26" fill="#636E72"/><ellipse cx="70" cy="80" rx="27" ry="22" fill="#B2BEC3"/><path d="M40 50L30 24L50 44" fill="#B2BEC3"/><path d="M100 50L110 24L90 44" fill="#B2BEC3"/><circle cx="52" cy="72" r="6" fill="#2D3436"/><circle cx="88" cy="72" r="6" fill="#2D3436"/><circle cx="52" cy="70" r="2" fill="#FFF"/><circle cx="88" cy="70" r="2" fill="#FFF"/><path d="M65 82L70 80L75 82" stroke="#2D3436" stroke-width="2" fill="none"/><circle cx="70" cy="40" r="7" fill="#636E72" opacity="0.5"/></svg>`,
+  'ISFJ': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="34" ry="28" fill="#FAB1A0"/><ellipse cx="70" cy="80" rx="29" ry="23" fill="#FFEAA7"/><path d="M42 52L32 28L52 48" fill="#FFEAA7"/><path d="M98 52L108 28L88 48" fill="#FFEAA7"/><circle cx="54" cy="72" r="6" fill="#2D3436"/><circle cx="86" cy="72" r="6" fill="#2D3436"/><circle cx="54" cy="70" r="2" fill="#FFF"/><circle cx="86" cy="70" r="2" fill="#FFF"/><ellipse cx="70" cy="82" rx="8" ry="5" fill="#E17055"/><circle cx="70" cy="42" r="8" fill="#FAB1A0" opacity="0.6"/></svg>`,
+  'ISFP': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="33" ry="27" fill="#A29BFE"/><ellipse cx="70" cy="80" rx="28" ry="22" fill="#FDCB6E"/><path d="M40 50L30 24L50 46" fill="#FDCB6E"/><path d="M100 50L110 24L90 46" fill="#FDCB6E"/><circle cx="52" cy="72" r="6" fill="#2D3436"/><circle cx="88" cy="72" r="6" fill="#2D3436"/><circle cx="52" cy="70" r="2" fill="#FFF"/><circle cx="88" cy="70" r="2" fill="#FFF"/><path d="M62 82Q70 86 78 82" stroke="#2D3436" stroke-width="2" fill="none"/><circle cx="70" cy="40" r="9" fill="#FDCB6E" opacity="0.7"/><circle cx="50" cy="98" r="4" fill="#FDCB6E"/><circle cx="90" cy="98" r="4" fill="#FDCB6E"/></svg>`,
+  'INTJ': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="34" ry="27" fill="#2D3436"/><ellipse cx="70" cy="80" rx="29" ry="23" fill="#636E72"/><path d="M42 52L30 24L52 48" fill="#636E72"/><path d="M98 52L110 24L88 48" fill="#636E72"/><circle cx="54" cy="72" r="6" fill="#74B9FF"/><circle cx="86" cy="72" r="6" fill="#74B9FF"/><circle cx="54" cy="72" r="2" fill="#2D3436"/><circle cx="86" cy="72" r="2" fill="#2D3436"/><path d="M62 82Q70 86 78 82" stroke="#74B9FF" stroke-width="2" fill="none"/><circle cx="70" cy="42" r="8" fill="#74B9FF" opacity="0.6"/><circle cx="45" cy="95" r="3" fill="#74B9FF" opacity="0.4"/><circle cx="95" cy="95" r="3" fill="#74B9FF" opacity="0.4"/></svg>`,
+  'INTP': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="33" ry="27" fill="#636E72"/><ellipse cx="70" cy="80" rx="28" ry="22" fill="#B2BEC3"/><path d="M40 50L30 24L50 46" fill="#B2BEC3"/><path d="M100 50L110 24L90 46" fill="#B2BEC3"/><circle cx="52" cy="72" r="6" fill="#2D3436"/><circle cx="88" cy="72" r="6" fill="#2D3436"/><circle cx="52" cy="70" r="2" fill="#FFF"/><circle cx="88" cy="70" r="2" fill="#FFF"/><ellipse cx="70" cy="82" rx="6" ry="4" fill="#636E72"/><circle cx="70" cy="40" r="7" fill="#A29BFE" opacity="0.5"/><circle cx="55" cy="50" r="3" fill="#A29BFE" opacity="0.3"/><circle cx="85" cy="50" r="3" fill="#A29BFE" opacity="0.3"/></svg>`,
+  'INFJ': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="34" ry="28" fill="#6C5CE7"/><ellipse cx="70" cy="80" rx="29" ry="23" fill="#A29BFE"/><path d="M42 52L32 28L52 48" fill="#A29BFE"/><path d="M98 52L108 28L88 48" fill="#A29BFE"/><circle cx="54" cy="72" r="6" fill="#2D3436"/><circle cx="86" cy="72" r="6" fill="#2D3436"/><circle cx="54" cy="70" r="2" fill="#FFF"/><circle cx="86" cy="70" r="2" fill="#FFF"/><path d="M62 82Q70 88 78 82" stroke="#2D3436" stroke-width="2" fill="none"/><circle cx="70" cy="42" r="10" fill="#FDCB6E" opacity="0.6"/><circle cx="70" cy="42" r="5" fill="#6C5CE7" opacity="0.3"/></svg>`,
+  'INFP': `<svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="70" cy="70" r="65" fill="#FFF5F0"/><ellipse cx="70" cy="85" rx="33" ry="27" fill="#FD79A8"/><ellipse cx="70" cy="80" rx="28" ry="22" fill="#FAB1A0"/><path d="M40 50L30 24L50 46" fill="#FAB1A0"/><path d="M100 50L110 24L90 46" fill="#FAB1A0"/><circle cx="52" cy="72" r="6" fill="#2D3436"/><circle cx="88" cy="72" r="6" fill="#2D3436"/><circle cx="52" cy="70" r="2" fill="#FFF"/><circle cx="88" cy="70" r="2" fill="#FFF"/><ellipse cx="70" cy="82" rx="8" ry="5" fill="#E17055"/><circle cx="70" cy="40" r="9" fill="#FDCB6E" opacity="0.5"/><circle cx="45" cy="95" r="4" fill="#FD79A8" opacity="0.5"/><circle cx="95" cy="95" r="4" fill="#FD79A8" opacity="0.5"/></svg>`
+};
+
+const TYPES = {
+  'ESTJ': { name: '霸道总裁猫', emoji: '💼', desc: '它是家里的绝对老大。准时吃饭、按时巡视领地，对一切不守规矩的事情零容忍。它不是你的宠物，你是它的员工——负责开罐头的那种。虽然看起来不好惹，但它用行动守护这个家的每一天。', traits: [{ icon: '👑', name: '领地意识' }, { icon: '⏰', name: '时间观念' }, { icon: '💪', name: '执行力' }, { icon: '📋', name: '秩序感' }], tip: '给它固定的作息和领地空间，它会成为最靠谱的猫管家。尊重它的"规定"，你会收获一只忠诚的守护猫。' },
+  'ESTP': { name: '拆家小能手', emoji: '🏃', desc: '精力充沛的探险家！没有它翻不了的柜子，没有它够不到的架子。每一次你回家都是一次"案发现场"勘察。但它永远充满好奇心和活力，每天都能给你带来惊喜（和惊吓）。', traits: [{ icon: '🔥', name: '冒险精神' }, { icon: '💪', name: '运动达人' }, { icon: '😎', name: '随性洒脱' }, { icon: '🎪', name: '表演天赋' }], tip: '多准备互动玩具和猫爬架来消耗它的精力，不然你的家具就要遭殃了！每天至少20分钟的互动游戏。' },
+  'ESFJ': { name: '居委会猫', emoji: '👩‍✈️', desc: '家里的热心肠！客人来了它比你还热情，新买的扫地机器人它要一一"面试"。它关心家里每个成员的动向，是猫界最有"人情味"的社交达人。', traits: [{ icon: '🤝', name: '热情好客' }, { icon: '😊', name: '善解人意' }, { icon: '📞', name: '社交达人' }, { icon: '🏠', name: '顾家' }], tip: '定期邀请朋友来家里做客，它会非常开心。多给它社交的机会，但也要给它独处的休息时间。' },
+  'ESFP': { name: '派对动物猫', emoji: '🎉', desc: '天生的主角！只要有人在，它就是全场焦点。会翻跟头、会握手、会用卖萌换取一切。它活得快乐而肆意，是治愈系的天花板——虽然半夜三点可能会在你肚子上跑酷。', traits: [{ icon: '🌟', name: '天生主角' }, { icon: '😂', name: '搞笑担当' }, { icon: '💕', name: '快乐源泉' }, { icon: '🎪', name: '多才多艺' }], tip: '它是天生的表演者，多陪它互动、教它小技能。但要注意控制体重，因为"社交"往往伴随着零食。' },
+  'ENTJ': { name: '猫界CEO', emoji: '👑', desc: '战略眼光一流，执行力爆表。它会制定家里的规则并严格执行——包括几点该开罐头、哪些地方不准去。它不是在和你相处，它是在管理你。但不得不承认，它的计划总是高效的。', traits: [{ icon: '🎯', name: '领导力' }, { icon: '🧠', name: '战略思维' }, { icon: '📊', name: '高效执行' }, { icon: '🔥', name: '目标导向' }], tip: '它需要智力挑战！给它买益智玩具、藏食玩具。尊重它的"管理"，适当配合它的"指令"。' },
+  'ENTP': { name: '发明家猫', emoji: '💡', desc: '聪明到让人头疼的好奇宝宝。它能把纸箱变成堡垒，把窗帘变成攀岩墙，把你的拖鞋变成"实验对象"。规则对它来说就是用来打破的，它享受挑战一切的过程。', traits: [{ icon: '🧪', name: '好奇心MAX' }, { icon: '🔥', name: '挑战规则' }, { icon: '🧩', name: '智商在线' }, { icon: '🎭', name: '戏精本精' }], tip: '永远不要低估它的智商！定期更换玩具、变换环境布局。它需要持续的新鲜感，不然可能拿你的东西"做实验"。' },
+  'ENFJ': { name: '治愈系暖猫', emoji: '🤗', desc: '天生的共情大师！它总能在你最需要的时候出现——你难过时蹭你的手，你生病时守在你身边。它是猫咪界的心理咨询师，用无声的陪伴治愈一切。', traits: [{ icon: '❤️', name: '超级共情' }, { icon: '🤗', name: '温暖治愈' }, { icon: '👼', name: '善解人意' }, { icon: '🌟', name: '正能量' }], tip: '它是你的情绪守护者，记得也多关注它的情绪需求。给它固定的陪伴时间和安静的空间。' },
+  'ENFP': { name: '社交蝴蝶猫', emoji: '🦋', desc: '热情洋溢的小太阳！跟家里的每只虫子都能成为朋友，对快递小哥也报以最大善意。它的世界没有陌生人，只有还没来得及认识的朋友。虽然偶尔过于兴奋，但快乐是真的有感染力。', traits: [{ icon: '🌈', name: '活力四射' }, { icon: '🦋', name: '自由灵魂' }, { icon: '🎨', name: '创意无限' }, { icon: '😄', name: '快乐传播者' }], tip: '给它足够的探索空间和社交机会。多猫家庭的最优选择，它天生就是好朋友。' },
+  'ISTJ': { name: '忠诚卫兵猫', emoji: '🛡️', desc: '可靠、守时、有责任感。它每天在固定位置等你回家，比闹钟还准。它不会大声求关注，但会在你睡着后默默守在门口。它是猫界最靠谱的存在。', traits: [{ icon: '⏰', name: '极度准时' }, { icon: '🛡️', name: '忠诚守护' }, { icon: '📋', name: '规律作息' }, { icon: '🤫', name: '默默守护' }], tip: '尊重它的规律和领地，不要随意改变它的生活环境。它需要的不是惊喜，而是稳定和安心。' },
+  'ISTP': { name: '独行侠猫', emoji: '🏍️', desc: '酷到骨子里的独立猫。不太需要你，但关键时刻会展现惊人的本领——比如在你遇到虫子时优雅地处理。它活在自己的节奏里，不讨好、不取悦，却有一种让人着迷的冷感。', traits: [{ icon: '😎', name: '酷到没边' }, { icon: '🔧', name: '动手能力' }, { icon: '🏔️', name: '独立自主' }, { icon: '🎭', name: '深藏不露' }], tip: '给它足够的独处空间，不要强迫互动。当它主动靠近你时，珍惜那一刻——那是它的最高礼遇。' },
+  'ISFJ': { name: '守护天使猫', emoji: '🧸', desc: '温柔、体贴、默默守护。它不会大声喵喵叫着要关注，但总在你身边——你工作时它趴在桌角，你看电视时它依偎在沙发旁。它是用陪伴说"我爱你"的猫。', traits: [{ icon: '🧸', name: '温柔如水' }, { icon: '🛡️', name: '默默守护' }, { icon: '❤️', name: '贴心关怀' }, { icon: '🏠', name: '家的象征' }], tip: '它虽然不张扬，但非常需要你的回应。每天抽出时间静静陪它待一会儿，对它来说就是最好的礼物。' },
+  'ISFP': { name: '慵懒艺术家猫', emoji: '🎨', desc: '安静的浪漫主义者。它会在阳光下找个完美的角度打盹，偶尔伸个懒腰都是一幅画。它感受丰富但表达含蓄，是猫界最有"文艺范"的存在。', traits: [{ icon: '☀️', name: '追光者' }, { icon: '🎨', name: '美学大师' }, { icon: '😴', name: '慵懒达人' }, { icon: '🌙', name: '夜行动物' }], tip: '给它一个阳光充足的窗台，它会非常幸福。偶尔它会在凌晨创作"跑酷艺术"，习惯就好。' },
+  'INTJ': { name: '暗夜战略家猫', emoji: '🧠', desc: '高智商的幕后大佬。它在暗中观察一切——你的作息、冰箱开门的技巧、门把手的工作原理。然后在一个你意想不到的时刻，精准执行它的"计划"。比如凌晨三点打开零食柜。', traits: [{ icon: '🧠', name: '超高智商' }, { icon: '🎯', name: '精密计划' }, { icon: '🌙', name: '暗夜行动' }, { icon: '👁️', name: '洞察一切' }], tip: '智力型猫咪需要智力玩具！推荐藏食玩具和互动智力游戏。同时，检查一下你的零食柜是否真的安全……' },
+  'INTP': { name: '哲学家猫', emoji: '📚', desc: '爱思考的宅猫天花板。它可以盯着空气看一小时——你在想它在发呆，它在思考薛定谔方程和宇宙的终极意义。偶尔突然行动，像是在验证某个猜想。', traits: [{ icon: '🤔', name: '深度思考' }, { icon: '📖', name: '知识储备' }, { icon: '🧛', name: '夜猫子' }, { icon: '🌀', name: '脑洞大开' }], tip: '不要打扰它的"思考时间"。给它有趣的观察视角（窗台、高处），它需要一个能静静观察世界的地方。' },
+  'INFJ': { name: '神秘先知猫', emoji: '🔮', desc: '最神秘的猫格类型。它似乎拥有第六感——你能悲伤之前它就已经靠了过来。它不善于表达，但每一次靠近都精准得让人心碎。它是来渡你的猫。', traits: [{ icon: '🔮', name: '超感知' }, { icon: '💜', name: '深沉内敛' }, { icon: '✨', name: '灵魂伴侣' }, { icon: '🌙', name: '神秘气质' }], tip: '珍惜它每一次主动的靠近，那都是经过深思熟虑的决定。给它安静、稳定的环境，它会在那里永远等你。' },
+  'INFP': { name: '梦幻棉花糖猫', emoji: '☁️', desc: '理想主义的浪漫猫。它的世界充满想象——追逐光影、对着空气微笑、在阳台上看夕阳。它敏感、温柔，偶尔有点小忧郁，但更多时候是在自己的小世界里快乐地发呆。', traits: [{ icon: '🌈', name: '理想主义' }, { icon: '☁️', name: '梦幻浪漫' }, { icon: '💖', name: '细腻敏感' }, { icon: '🦋', name: '自由灵魂' }], tip: '它需要情感上的安全感。不要大声呵斥，给它柔软的毯子和安静的角落。偶尔它会需要你的安慰，那时请温柔地回应。' }
+};
+
+// ===== STATE =====
+let currentQ = 0;
+let scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+let catName = '猫咪';
+let answers = [];
+
+// ===== NAVIGATION =====
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => {
+    if (p.id !== id) {
+      p.classList.remove('active', 'right', 'left');
+      p.classList.add(p.dataset.pos || 'left');
+    }
+  });
+  const page = document.getElementById(id);
+  page.classList.remove('left', 'right', 'hidden');
+  page.classList.add('active');
+  page.dataset.pos = '';
+}
+
+function nextPage(fromId, toId) {
+  const from = document.getElementById(fromId);
+  const to = document.getElementById(toId);
+  from.dataset.pos = 'left';
+  from.classList.remove('active');
+  from.classList.add('left');
+  to.dataset.pos = 'right';
+  to.classList.remove('right', 'hidden');
+  // force reflow
+  void to.offsetWidth;
+  to.classList.add('active');
+  to.classList.remove('right');
+}
+
+// ===== QUIZ =====
+function startQuiz() {
+  catName = document.getElementById('catName').value.trim() || '猫咪';
+  document.getElementById('loadingCatName').textContent = catName;
+  currentQ = 0;
+  scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+  answers = [];
+  renderQuestion();
+  nextPage('page-welcome', 'page-question');
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const dim = DIMENSIONS.find(d => d.key === q.dim);
+  document.getElementById('qCounter').textContent = `${currentQ + 1}/${QUESTIONS.length}`;
+  document.getElementById('progressBar').style.width = `${((currentQ) / QUESTIONS.length) * 100}%`;
+  document.getElementById('qDimension').textContent = `${dim.icon} ${dim.name}`;
+  document.getElementById('qIcon').textContent = q.icon;
+  document.getElementById('qText').textContent = q.text;
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-emoji">${opt.emoji}</span><span class="option-label">${opt.text}</span>`;
+    btn.style.animationDelay = `${idx * 0.05}s`;
+    btn.onclick = () => selectOption(idx);
+    container.appendChild(btn);
+  });
+}
+
+function selectOption(idx) {
+  const q = QUESTIONS[currentQ];
+  const opt = q.options[idx];
+  // Record answer
+  answers.push({ qIndex: currentQ, optIndex: idx });
+  // Add scores
+  Object.entries(opt.scores).forEach(([k, v]) => { scores[k] += v; });
+  // Visual feedback
+  const btns = document.querySelectorAll('.option-btn');
+  btns[idx].classList.add('selected');
+  setTimeout(() => nextQuestion(), 300);
+}
+
+function skipQuestion() {
+  answers.push({ qIndex: currentQ, optIndex: -1 });
+  nextQuestion();
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= QUESTIONS.length) {
+    // Update progress to 100%
+    document.getElementById('progressBar').style.width = '100%';
+    setTimeout(() => {
+      nextPage('page-question', 'page-loading');
+      setTimeout(() => showResult(), 2500);
+    }, 300);
+  } else {
+    renderQuestion();
+  }
+}
+
+function calculateType() {
+  let typeCode = '';
+  typeCode += (scores.E >= scores.I) ? 'E' : 'I';
+  typeCode += (scores.S >= scores.N) ? 'S' : 'N';
+  typeCode += (scores.T >= scores.F) ? 'T' : 'F';
+  typeCode += (scores.J >= scores.P) ? 'J' : 'P';
+  return typeCode;
+}
+
+function getDimensionPercent(leftKey, rightKey) {
+  const total = scores[leftKey] + scores[rightKey];
+  if (total === 0) return 50;
+  return Math.round((scores[rightKey] / total) * 100);
+}
+
+function showResult() {
+  const typeCode = calculateType();
+  const type = TYPES[typeCode];
+  document.getElementById('resultCatName').textContent = `${catName}的性格是`;
+  document.getElementById('resultEmoji').innerHTML = CAT_SVGS[typeCode];
+  document.getElementById('resultTypeName').textContent = type.name;
+  document.getElementById('resultCode').textContent = typeCode;
+  document.getElementById('resultDesc').textContent = type.desc;
+  document.getElementById('resultTip').textContent = type.tip;
+  // Traits
+  const traitsContainer = document.getElementById('resultTraits');
+  traitsContainer.innerHTML = '';
+  type.traits.forEach(t => {
+    traitsContainer.innerHTML += `<div class="trait-item"><div class="trait-icon">${t.icon}</div><div class="trait-name">${t.name}</div></div>`;
+  });
+  // Dimension bars
+  const barsContainer = document.getElementById('dimensionBars');
+  barsContainer.innerHTML = '';
+  DIMENSIONS.forEach(dim => {
+    const keys = dim.key.split('');
+    const pct = getDimensionPercent(keys[0], keys[1]);
+    const isRight = pct >= 50;
+    barsContainer.innerHTML += `
+      <div class="dimension-row">
+        <div class="dimension-labels">
+          <span class="dimension-label-left">${dim.left}</span>
+          <span class="dimension-label-right">${dim.right}</span>
+        </div>
+        <div class="dimension-bar-bg">
+          <div class="dimension-bar-fill ${isRight ? 'right' : 'left'}" data-width="${pct}%" style="width:0"></div>
+        </div>
+      </div>`;
+  });
+  nextPage('page-loading', 'page-result');
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.dimension-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width;
+    });
+  }, 100);
+  // Confetti
+  launchConfetti();
+}
+
+// ===== SHARE IMAGE =====
+function generateShareImage() {
+  showToast('正在生成海报...');
+  const typeCode = calculateType();
+  const type = TYPES[typeCode];
+  const canvas = document.getElementById('shareCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = 750, H = 1334;
+  canvas.width = W;
+  canvas.height = H;
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#667eea');
+  grad.addColorStop(1, '#764ba2');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Dot pattern
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  for (let x = 0; x < W; x += 30) {
+    for (let y = 0; y < H; y += 30) {
+      ctx.beginPath();
+      ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Card
+  roundRect(ctx, 50, 120, W - 100, H - 280, 30);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fill();
+  ctx.shadowColor = 'rgba(0,0,0,0.1)';
+  ctx.shadowBlur = 30;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Title area
+  ctx.fillStyle = '#667eea';
+  roundRectTop(ctx, 50, 120, W - 100, 240, 30);
+  ctx.fill();
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '32px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🐱 猫咪性格测试 CBTI', W / 2, 195);
+  ctx.font = '22px -apple-system, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.fillText(`${catName} 的性格报告`, W / 2, 240);
+  ctx.font = '24px -apple-system, sans-serif';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(typeCode, W / 2, 310);
+
+  // Emoji
+  ctx.font = '80px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(type.emoji, W / 2, 460);
+
+  // Type name
+  ctx.fillStyle = '#2D3436';
+  ctx.font = 'bold 42px -apple-system, sans-serif';
+  ctx.fillText(type.name, W / 2, 530);
+
+  // Description
+  ctx.fillStyle = '#636E72';
+  ctx.font = '26px -apple-system, sans-serif';
+  wrapText(ctx, type.desc, 100, 590, W - 200, 40);
+
+  // Traits
+  const traitY = getDescHeight(ctx, type.desc, W - 200, 40) + 620;
+  ctx.fillStyle = '#2D3436';
+  ctx.font = 'bold 28px -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('✨ 性格关键词', 100, traitY);
+
+  const traits = type.traits;
+  const traitStartX = 100;
+  const traitStartY = traitY + 50;
+  const traitW = (W - 200 - 30) / 2;
+  const traitH = 80;
+  traits.forEach((t, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const x = traitStartX + col * (traitW + 30);
+    const y = traitStartY + row * (traitH + 16);
+    roundRect(ctx, x, y, traitW, traitH, 16);
+    ctx.fillStyle = '#F8F9FA';
+    ctx.fill();
+    ctx.font = '30px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(t.icon, x + traitW / 2, y + 42);
+    ctx.fillStyle = '#2D3436';
+    ctx.font = 'bold 22px -apple-system, sans-serif';
+    ctx.fillText(t.name, x + traitW / 2, y + 68);
+  });
+
+  // Dimension bars
+  const dimY = traitStartY + Math.ceil(traits.length / 2) * (traitH + 16) + 40;
+  ctx.fillStyle = '#2D3436';
+  ctx.font = 'bold 28px -apple-system, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('📊 性格维度', 100, dimY);
+
+  DIMENSIONS.forEach((dim, i) => {
+    const keys = dim.key.split('');
+    const pct = getDimensionPercent(keys[0], keys[1]);
+    const y = dimY + 40 + i * 70;
+    // Labels
+    ctx.font = '22px -apple-system, sans-serif';
+    ctx.fillStyle = '#667eea';
+    ctx.textAlign = 'left';
+    ctx.fillText(dim.left.split(' ')[1] || dim.left, 100, y + 24);
+    ctx.fillStyle = '#FF6B6B';
+    ctx.textAlign = 'right';
+    ctx.fillText(dim.right.split(' ')[1] || dim.right, W - 100, y + 24);
+    // Bar bg
+    roundRect(ctx, 100, y + 34, W - 200, 16, 8);
+    ctx.fillStyle = '#F0F0F0';
+    ctx.fill();
+    // Bar fill
+    const fillW = Math.max(16, (W - 200) * pct / 100);
+    roundRect(ctx, 100, y + 34, fillW, 16, 8);
+    const barGrad = ctx.createLinearGradient(100, 0, 100 + fillW, 0);
+    barGrad.addColorStop(0, '#FF8E53');
+    barGrad.addColorStop(1, '#FF6B6B');
+    ctx.fillStyle = barGrad;
+    ctx.fill();
+    // Percentage
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${pct}%`, 100 + fillW / 2, y + 47);
+  });
+
+  // Footer
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = '24px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('👇 长按保存图片，分享给你的朋友', W / 2, H - 140);
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = '20px -apple-system, sans-serif';
+  ctx.fillText('测测你家猫咪是什么性格 →', W / 2, H - 100);
+
+  // Save
+  canvas.toBlob(blob => {
+    if (!blob) { showToast('生成失败，请重试'); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${catName}-CBTI性格测试.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('海报已保存！长按图片即可分享到朋友圈 🎉');
+  }, 'image/png');
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const chars = text.split('');
+  let line = '';
+  let curY = y;
+  for (let i = 0; i < chars.length; i++) {
+    const test = line + chars[i];
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x + (maxW - ctx.measureText(line).width) / 2, curY);
+      line = chars[i];
+      curY += lineH;
+    } else {
+      line = test;
+    }
+  }
+  if (line) ctx.fillText(line, x + (maxW - ctx.measureText(line).width) / 2, curY);
+}
+
+function getDescHeight(ctx, text, maxW, lineH) {
+  const chars = text.split('');
+  let line = '';
+  let lines = 1;
+  for (let i = 0; i < chars.length; i++) {
+    const test = line + chars[i];
+    if (ctx.measureText(test).width > maxW && line) {
+      line = chars[i];
+      lines++;
+    } else {
+      line = test;
+    }
+  }
+  return (lines - 1) * lineH;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function roundRectTop(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ===== CONFETTI =====
+function launchConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#FF6B6B', '#FFEAA7', '#55EFC4', '#74B9FF', '#A29BFE', '#FD79A8', '#FF8E53'];
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.width = (Math.random() * 8 + 6) + 'px';
+    confetti.style.height = (Math.random() * 8 + 6) + 'px';
+    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    confetti.style.animationDelay = Math.random() * 1 + 's';
+    container.appendChild(confetti);
+  }
+  setTimeout(() => { container.innerHTML = ''; }, 5000);
+}
+
+// ===== UTILS =====
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function restartQuiz() {
+  currentQ = 0;
+  scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+  answers = [];
+  renderQuestion();
+  document.getElementById('page-result').dataset.pos = 'left';
+  document.getElementById('page-question').dataset.pos = 'right';
+  document.getElementById('page-result').classList.remove('active');
+  document.getElementById('page-result').classList.add('left');
+  document.getElementById('page-question').classList.remove('left');
+  document.getElementById('page-question').classList.add('active');
+  // Scroll result page to top
+  document.getElementById('page-result').querySelector('.result-page').scrollTop = 0;
+}
+</script>
+</body>
+</html>
